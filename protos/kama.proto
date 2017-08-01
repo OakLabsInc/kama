@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package kama;
+
+
+service KamaDatabase {
+	/* ListEntities returns all Entities matching any of the non-null fields
+	 * given in the request.
+	 */
+	rpc ListEntities(Entity) returns(stream Entity);
+
+	/* GetEntity will try to find an entity with the given uuid, name, and
+	 * kind, allowing wildcard searches for any of the fields that aren't set.
+	 */
+	rpc GetEntity(Entity) returns (Entity);
+
+	/* CreateEntity will create a new Entity with the given name and kind and
+	 * return a new UUID
+	 */
+	rpc CreateEntity(CreateEntityRequest) returns (Entity);
+
+	/* DeleteEntity will delete the Entity with the given UUID. Other fields
+	 * are ignored.
+	 */
+	rpc DeleteEntity(Entity) returns (google.protobuf.Empty);
+
+	/* UpdateEntity currently only supports changing the entity's name. It uses
+	 * the uuid to determine what existing object is being updated. All other
+	 * fields are ignored.
+	 */
+	rpc UpdateEntity(Entity) returns (Entity);
+
+	rpc AddAttribute(Attribute) returns (Attribute);
+	rpc DeleteAttributes(Attribute) returns (google.protobuf.Empty);
+
+	rpc AddLink(Link) returns (Link);
+	rpc DeleteLink(Link) returns (google.protobuf.Empty);
+
+	rpc AddPermission(Permission) returns (Permission);
+	rpc DeletePermission(Permission) returns (google.protobuf.Empty);
+}
+
+message Entity {
+	bytes uuid = 1;
+	string name = 2;
+	string kind = 3;
+
+	repeated Attribute attributes = 4;
+	repeated Link links_from = 5;	// Links from this entity to other entities
+	repeated Link links_to = 6;		// Links to this entity from other entities
+	repeated Permission permissions = 7;
+}
+
+message Attribute {
+	bytes uuid = 1;
+	Entity entity = 2;
+	string key = 3;
+	bytes value = 4;
+}
+
+message Link {
+	bytes uuid = 1;
+	Entity from_entity = 2;
+	Entity to_entity = 3;
+}
+
+message Permission {
+	bytes uuid = 1;
+	Entity role = 2;
+	Entity entity = 3;
+	string name = 4;
+}
+
+message CreateEntityRequest {
+	Entity entity = 1;
+	Entity owner_role = 2;
+}
