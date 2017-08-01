@@ -188,21 +188,30 @@ class DatabaseServicer(kama_pb2_grpc.KamaDatabaseServicer):
         entity.delete_permission(role, pb_permission.name, context=request_context)
         return Empty()
 
-def main(args):
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--init-schema', action='store_true')
+    parser.add_argument('--server-cert', default=os.environ.get('KAMA_SERVER_CERT', 'server.cert'))
+    parser.add_argument('--server-key', default=os.environ.get('KAMA_SERVER_KEY', 'server.key'))
+    parser.add_argument('--ca-cert', default=os.environ.get('KAMA_CA_CERT', 'ca-cert.pem'))
+    parser.set_defaults(func=main)
+    args = parser.parse_args()
+
     if args.init_schema:
         kama.database.schema_init()
         return
 
-    server_cert = open(os.path.join('secrets', 'server.cert'), 'r').read()
-    server_key = open(os.path.join('secrets', 'server.key'), 'r').read()
-    root_cert = open(os.path.join('secrets', 'ca-cert.pem'), 'r').read()
+    server_cert = open(args.server_cert, 'r').read()
+    server_key = open(args.server_key, 'r').read()
+    root_cert = open(args.ca_cert, 'r').read()
     creds = grpc.ssl_server_credentials([(server_key, server_cert)], root_cert, require_client_auth=True)
 
     servicer = DatabaseServicer()
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=100))
     kama_pb2_grpc.add_KamaDatabaseServicer_to_server(servicer, server)
-    server.add_secure_port('[::]:8444', creds)
+    server.add_secure_port('[::]:8443', creds)
     server.start()
 
     try:
@@ -210,15 +219,3 @@ def main(args):
             time.sleep(60)
     except KeyboardInterrupt:
         server.stop(0)
-
-
-def setup_arguments(parser):
-    parser.add_argument('--init-schema', action='store_true')
-    parser.set_defaults(func=main)
-
-
-def cli():
-    parser = argparse.ArgumentParser()
-    setup_arguments(parser)
-    args = parser.parse_args()
-    main(args)
