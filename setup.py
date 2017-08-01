@@ -3,6 +3,9 @@ from setuptools import setup
 setup(
         name='kama',
         version='1.0',
+        author='Jeremy Grosser',
+        author_email='jeremy@oaklabs.is',
+        license='Apache-2.0',
         packages=['kama'],
         install_requires=[
             'grpcio==1.4.0',
