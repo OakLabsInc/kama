@@ -198,24 +198,6 @@ def require_permission(name):
     return decorator
 
 
-class Cache(object):
-    def __init__(self):
-        self.entities = {}
-
-    def add(self, entity):
-        expires_at = time.time() + CACHE_TTL
-        self.entities[entity.uuid] = (expires_at, entity)
-
-    def get(self, uuid):
-        if uuid in self.entities:
-            expires_at, entity = self.entities[uuid]
-            if expires_at > time.time():
-                return entity
-            else:
-                del self.entities[uuid]
-        return None
-
-
 class Entity(object):
     def __init__(self, uuid, kind=None, name=None):
         self.uuid = uuid
