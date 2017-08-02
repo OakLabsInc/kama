@@ -9,7 +9,7 @@ wait_for_mysql() {
 	echo "ok"
 }
 
-docker build -t kama-test .
+docker build -f Dockerfile.test -t kama-test .
 
 docker create -P --env MYSQL_ROOT_PASSWORD=beer --name mysql mysql:5.7 --character-set-server=utf8mb4
 docker start mysql
