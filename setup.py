@@ -19,10 +19,16 @@ from setuptools import setup
 
 setup(
         name='kama',
-        version='1.0',
+        version='1.0.0',
+        description='A truth database',
+        url='https://kama.sh/',
         author='Jeremy Grosser',
         author_email='jeremy@oaklabs.is',
         license='Apache-2.0',
+        classifiers=[
+            'Development Status :: 3 - Alpha',
+            'License :: OSI Approved :: Apache Software License',
+        ],
         packages=['kama'],
         install_requires=[
             'grpcio==1.4.0',
