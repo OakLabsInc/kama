@@ -157,10 +157,15 @@ CREATE TABLE `permissions` (
         cursor.execute('INSERT INTO `entities` (entity_uuid, kind, name) VALUES(UNHEX(%s), %s, %s)', (role_uuid, 'role', 'root'))
         cursor.execute('INSERT INTO `entities` (entity_uuid, kind, name) VALUES(UNHEX(%s), %s, %s)', (user_uuid, 'user', 'root'))
         cursor.execute('INSERT INTO `links` (link_uuid, from_uuid, to_uuid) VALUES(UNHEX(%s), UNHEX(%s), UNHEX(%s))', (link_uuid, role_uuid, user_uuid))
-        for permission in kama.acl.DEFAULT_ACLS['all']:
-            Permission._create(role_uuid, role_uuid, permission)
-        for permission in kama.acl.DEFAULT_ACLS['all']:
-            Permission._create(role_uuid, user_uuid, permission)
+
+    role = Entity(role_uuid)
+    user = Entity(user_uuid)
+    link = Link(link_uuid)
+
+    for permission in kama.acl.DEFAULT_ACLS['all']:
+        Permission._create(role, role, permission)
+    for permission in kama.acl.DEFAULT_ACLS['all']:
+        Permission._create(role, user, permission)
     
     return Entity(role_uuid), Entity(user_uuid)
 
@@ -179,15 +184,6 @@ class InternalContext(object):
     pass
 
 
-def has_permission(user, entity, name):
-    internal = InternalContext()
-    for permission in entity.permissions(context=internal):
-        if permission.name == name and user.uuid in permission.users(context=internal):
-            log.debug('ALLOW %s %s %s', user, name, entity)
-            return True
-    log.debug('DENY  %s %s %s', user, name, entity)
-    return False
-
 def require_permission(name):
     def decorator(fn):
         @functools.wraps(fn)
@@ -200,7 +196,7 @@ def require_permission(name):
                 # Short circuit permissions test for calls that are used to test permissions
                 return fn(self, *args, **kwargs)
             else:
-                if has_permission(context.user, self, name):
+                if context.user.has_permission(self, name):
                     return fn(self, *args, **kwargs)
                 else:
                     raise PermissionDeniedException('%s does not have permission to %s %s' % (context.user, name, self))
@@ -259,7 +255,7 @@ class Entity(object):
             cursor.execute('INSERT INTO entities(entity_uuid, kind, name) VALUES(UNHEX(%s), %s, %s)', (entity_uuid, kind, name))
             self = cls(entity_uuid, kind, name)
             for permission in kama.acl.DEFAULT_ACLS['all']:
-                Permission._create(owner_role.uuid, self.uuid, permission)
+                Permission._create(owner_role, self, permission)
             return self
 
     @classmethod
@@ -365,7 +361,7 @@ class Entity(object):
 
     @require_permission('entity.add_permission')
     def add_permission(self, role, name, context=None):
-        return Permission._create(role.uuid, self.uuid, name)
+        return Permission._create(role, self, name)
 
     @require_permission('entity.delete_permission')
     def delete_permission(self, role, name, context=None):
@@ -374,10 +370,22 @@ class Entity(object):
 
     @require_permission('entity.read_permission')
     def permissions(self, context=None):
+        permissions = []
         with get_database_context() as cursor:
-            cursor.execute('SELECT HEX(permission_uuid), HEX(role_uuid), HEX(entity_uuid), name FROM permissions WHERE entity_uuid=UNHEX(%s)', (self.uuid,))
-            return [Permission(*x) for x in cursor]
+            cursor.execute('SELECT HEX(permission_uuid), HEX(role_uuid), entities.kind, entities.name, permissions.name FROM permissions, entities WHERE permissions.entity_uuid=UNHEX(%s) AND entities.entity_uuid=permissions.role_uuid', (self.uuid,))
+            for permission_uuid, role_uuid, role_kind, role_name, name in cursor:
+                role = Entity(role_uuid, role_kind, role_name)
+                permission = Permission(permission_uuid, role, self, name)
+                permissions.append(permission)
+        return permissions
 
+    def has_permission(self, entity, name):
+        with get_database_context() as cursor:
+            cursor.execute('SELECT HEX(permissions.permission_uuid) FROM permissions, entities AS role, entities AS users, links WHERE permissions.entity_uuid=UNHEX(%s) AND permissions.name=%s AND role.entity_uuid=permissions.role_uuid AND links.from_uuid=role.entity_uuid AND links.to_uuid=users.entity_uuid AND users.entity_uuid=UNHEX(%s)', (entity.uuid, name, self.uuid))
+            if cursor.rowcount > 0:
+                return True
+            else:
+                return False
 
 class Attribute(object):
     def __init__(self, uuid, entity_uuid=None, key=None, value=None):
@@ -470,21 +478,21 @@ class Link(object):
 
 
 class Permission(object):
-    def __init__(self, uuid, role_uuid=None, entity_uuid=None, name=None):
+    def __init__(self, uuid, role=None, entity=None, name=None):
         self.uuid = uuid
 
-        if role_uuid is None or entity_uuid is None or name is None:
+        if role is None or entity is None or name is None:
             self.get()
         else:
-            self.role_uuid = role_uuid
-            self.entity_uuid = entity_uuid
+            self.role = role
+            self.entity = entity
             self.name = name
 
     def __str__(self):
-        return 'Permission %s has %s on %s' % (self.role(), self.name, self.entity())
+        return 'Permission %s has %s on %s' % (self.role, self.name, self.entity)
 
     def __repr__(self):
-        return 'Permission(%r, %r, %r, %r)' % (self.uuid, self.role_uuid, self.entity_uuid, self.name)
+        return 'Permission(%r, %r, %r, %r)' % (self.uuid, self.role, self.entity, self.name)
 
     def __eq__(self, other):
         return self.uuid == other.uuid
@@ -496,12 +504,12 @@ class Permission(object):
         return int(self.uuid, 16) - int(other.uuid, 16)
 
     @classmethod
-    def _create(cls, role_uuid, entity_uuid, name):
+    def _create(cls, role, entity, name):
         with get_database_context() as cursor:
             permission_uuid = generate_uuid()
             cursor.execute('INSERT INTO permissions (permission_uuid, role_uuid, entity_uuid, name) VALUES(UNHEX(%s), UNHEX(%s), UNHEX(%s), %s)',
-                    (permission_uuid, role_uuid, entity_uuid, name))
-            return cls(permission_uuid, role_uuid, entity_uuid, name)
+                    (permission_uuid, role.uuid, entity.uuid, name))
+            return cls(permission_uuid, role, entity, name)
     
     def get(self):
         with get_database_context() as cursor:
@@ -509,15 +517,9 @@ class Permission(object):
             row = cursor.fetchone()
             if row is None:
                 raise PermissionNotFoundException(self.uuid)
-            self.role_uuid, self.entity_uuid, self.name = row
+            role_uuid, entity_uuid, self.name = row
+            self.role = Entity(role_uuid)
+            self.entity = Entity(entity_uuid)
 
-    def entity(self):
-        return Entity(self.entity_uuid)
-
-    def role(self):
-        return Entity(self.role_uuid)
-    
     def users(self, context=None):
-        with get_database_context() as cursor:
-            cursor.execute('SELECT HEX(to_uuid) FROM links WHERE from_uuid=UNHEX(%s)', (self.role_uuid,))
-            return [x[0] for x in cursor.fetchall()]
+        return [x.from_entity for x in self.role.links_to(context=context)]

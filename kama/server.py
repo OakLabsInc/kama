@@ -56,8 +56,12 @@ def entity_to_pb(context, entity, detail=True):
         for permission in entity.permissions(context=context):
             permission_pb = pb.permissions.add()
             permission_pb.uuid = permission.uuid
-            permission_pb.role.uuid = permission.role_uuid
-            permission_pb.entity.uuid = permission.entity_uuid
+            permission_pb.role.uuid = permission.role.uuid
+            permission_pb.role.kind = permission.role.kind
+            permission_pb.role.name = permission.role.name
+            permission_pb.entity.uuid = permission.entity.uuid
+            permission_pb.entity.kind = permission.entity.kind
+            permission_pb.entity.name = permission.entity.name
             permission_pb.name = permission.name
 
     return pb
