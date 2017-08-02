@@ -94,6 +94,7 @@ class DatabaseContext(object):
         log.debug('COMMIT')
         self.database.__exit__(*args)
         self.database.commit()
+        self.database.close()
 
 
 def get_database_context():
