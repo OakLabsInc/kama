@@ -20,3 +20,4 @@ docker run --name kama-test --rm -t --link mysql --env MYSQL_SERVICE_PASSWORD=ka
 
 docker stop mysql
 docker rm mysql
+docker rmi kama-test
