@@ -69,20 +69,21 @@ class DatabaseContext(object):
         self.database = None
 
     def __enter__(self):
-        params = {
-            'host': kama.env.get(['MYSQL_SERVICE_HOST', 'MYSQL_PORT_3306_TCP_ADDR'], '127.0.0.1'),
-            'port': int(kama.env.get(['MYSQL_SERVICE_PORT', 'MYSQL_PORT_3306_TCP_PORT'], 3306)),
-            'user': kama.env.get(['MYSQL_SERVICE_USER'], 'kama'),
-            'db': kama.env.get(['MYSQL_SERVICE_DATABASE'], 'kama'),
-            'connect_timeout': int(kama.env.get(['MYSQL_CONNECT_TIMEOUT'], 5)),
-        }
-        log.debug('Connecting to database with params: %r', params)
+        if self.database is None:
+            params = {
+                'host': kama.env.get(['MYSQL_SERVICE_HOST', 'MYSQL_PORT_3306_TCP_ADDR'], '127.0.0.1'),
+                'port': int(kama.env.get(['MYSQL_SERVICE_PORT', 'MYSQL_PORT_3306_TCP_PORT'], 3306)),
+                'user': kama.env.get(['MYSQL_SERVICE_USER'], 'kama'),
+                'db': kama.env.get(['MYSQL_SERVICE_DATABASE'], 'kama'),
+                'connect_timeout': int(kama.env.get(['MYSQL_CONNECT_TIMEOUT'], 5)),
+            }
+            log.debug('Connecting to database with params: %r', params)
 
-        params['passwd'] = kama.env.get(['MYSQL_SERVICE_PASSWORD'])
-        if params['passwd'] is None:
-            del params['passwd']
+            params['passwd'] = kama.env.get(['MYSQL_SERVICE_PASSWORD'])
+            if params['passwd'] is None:
+                del params['passwd']
 
-        self.database = MySQLdb.connect(**params)
+            self.database = MySQLdb.connect(**params)
 
         cursor = self.database.cursor(cursorclass=LoggingCursor)
         #cursor.execute('SET NAMES utf8mb4')
@@ -90,11 +91,17 @@ class DatabaseContext(object):
         #cursor.execute('SET character_set_connection=utf8mb4')
         return cursor
 
-    def __exit__(self, *args):
-        log.debug('COMMIT')
-        self.database.__exit__(*args)
-        self.database.commit()
-        self.database.close()
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.database.__exit__(exc_type, exc_value, exc_traceback)
+        if exc_type is not None:
+            try:
+                log.debug('Closing database connection after exception was handled: %s', exc_type)
+                self.database.close()
+                self.database = None
+            except: pass
+        else:
+            log.debug('COMMIT')
+            self.database.commit()
 
 
 def get_database_context():
