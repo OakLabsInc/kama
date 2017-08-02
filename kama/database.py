@@ -9,6 +9,7 @@ import sys
 import os
 
 import kama.acl
+import kama.env
 import kama.log
 
 
@@ -63,28 +64,21 @@ class LoggingCursor(MySQLdb.cursors.Cursor):
         return MySQLdb.cursors.Cursor.execute(self, query, args)
 
 
-def getenv(keys, default=None):
-    for key in keys:
-        if key in os.environ:
-            return os.environ[key]
-    return default
-
-
 class DatabaseContext(object):
     def __init__(self):
         self.database = None
 
     def __enter__(self):
         params = {
-            'host': getenv(['MYSQL_SERVICE_HOST', 'MYSQL_PORT_3306_TCP_ADDR'], '127.0.0.1'),
-            'port': int(getenv(['MYSQL_SERVICE_PORT', 'MYSQL_PORT_3306_TCP_PORT'], 3306)),
-            'user': getenv(['MYSQL_SERVICE_USER'], 'kama'),
-            'db': getenv(['MYSQL_SERVICE_DATABASE'], 'kama'),
-            'connect_timeout': int(getenv(['MYSQL_CONNECT_TIMEOUT'], 5)),
+            'host': kama.env.get(['MYSQL_SERVICE_HOST', 'MYSQL_PORT_3306_TCP_ADDR'], '127.0.0.1'),
+            'port': int(kama.env.get(['MYSQL_SERVICE_PORT', 'MYSQL_PORT_3306_TCP_PORT'], 3306)),
+            'user': kama.env.get(['MYSQL_SERVICE_USER'], 'kama'),
+            'db': kama.env.get(['MYSQL_SERVICE_DATABASE'], 'kama'),
+            'connect_timeout': int(kama.env.get(['MYSQL_CONNECT_TIMEOUT'], 5)),
         }
         log.debug('Connecting to database with params: %r', params)
 
-        params['passwd'] = getenv(['MYSQL_SERVICE_PASSWORD'])
+        params['passwd'] = kama.env.get(['MYSQL_SERVICE_PASSWORD'])
         if params['passwd'] is None:
             del params['passwd']
 

@@ -1,12 +1,13 @@
 #!/usr/bin/env python
-import grpc
-from kama import kama_pb2
-from kama import kama_pb2_grpc
 from google.protobuf.empty_pb2 import Empty
-import argparse
-import os
+import grpc
 
 from kama.acl import DEFAULT_ACLS
+from kama import kama_pb2
+from kama import kama_pb2_grpc
+import kama.env
+
+import argparse
 
 
 class KamaDatabaseClient(object):
@@ -247,10 +248,10 @@ def permission_delete(args):
 
 
 def setup_arguments(parser):
-    parser.add_argument('--server', default=os.environ.get('KAMA_SERVER', '127.0.0.1:8443'))
-    parser.add_argument('--ca-cert', default='ca-cert.pem')
-    parser.add_argument('--client-key', default='client.key')
-    parser.add_argument('--client-cert', default='client.cert')
+    parser.add_argument('--server', default=kama.env.get(['KAMA_SERVER'], '127.0.0.1:8443'))
+    parser.add_argument('--ca-cert', default=kama.env.get(['KAMA_CA_CERT'], 'ca-cert.pem'))
+    parser.add_argument('--client-key', default=kama.env.get(['KAMA_CLIENT_KEY'], 'client.key'))
+    parser.add_argument('--client-cert', default=kama.env.get(['KAMA_CLIENT_CERT'], 'client.cert'))
     sp = parser.add_subparsers()
 
     # kama dbclient entity ...
