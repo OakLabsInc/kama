@@ -7,4 +7,3 @@ RUN pip install nose
 WORKDIR /kama
 COPY . .
 RUN pip install .
-RUN nosetests
