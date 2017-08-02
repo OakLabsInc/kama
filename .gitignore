@@ -1,6 +1,7 @@
 *.swp
 *.pyc
 *.egg-info
+wheels
 build
 dist
 env
