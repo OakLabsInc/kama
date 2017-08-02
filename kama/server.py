@@ -11,42 +11,54 @@ import os
 
 import kama.database
 import kama.context
+import kama.log
 
 
-def entity_to_pb(context, entity):
+log = kama.log.get_logger('kama.server')
+
+
+def entity_to_pb(context, entity, detail=True):
     pb = kama_pb2.Entity()
     pb.uuid = entity.uuid
     pb.name = entity.name
     pb.kind = entity.kind
 
-    for attribute in entity.attributes(context=context):
-        attribute_pb = pb.attributes.add()
-        attribute_pb.uuid = attribute.uuid
-        attribute_pb.entity.uuid = attribute.entity_uuid
-        attribute_pb.entity.kind = entity.kind
-        attribute_pb.entity.name = entity.name
-        attribute_pb.key = attribute.key
-        attribute_pb.value = attribute.value
+    if detail:
+        for attribute in entity.attributes(context=context):
+            attribute_pb = pb.attributes.add()
+            attribute_pb.uuid = attribute.uuid
+            attribute_pb.entity.uuid = attribute.entity_uuid
+            attribute_pb.entity.kind = entity.kind
+            attribute_pb.entity.name = entity.name
+            attribute_pb.key = attribute.key
+            attribute_pb.value = attribute.value
 
-    for link in entity.links_from(context=context):
-        link_pb = pb.links_from.add()
-        link_pb.uuid = link.uuid
-        link_pb.from_entity.uuid = link.from_uuid
-        link_pb.to_entity.uuid = link.to_uuid
+        for link in entity.links_from(context=context):
+            link_pb = pb.links_from.add()
+            link_pb.uuid = link.uuid
+            link_pb.from_entity.uuid = link.from_entity.uuid
+            link_pb.from_entity.kind = link.from_entity.kind
+            link_pb.from_entity.name = link.from_entity.name
+            link_pb.to_entity.uuid = link.to_entity.uuid
+            link_pb.to_entity.kind = link.to_entity.kind
+            link_pb.to_entity.name = link.to_entity.name
 
+        for link in entity.links_to(context=context):
+            link_pb = pb.links_to.add()
+            link_pb.uuid = link.uuid
+            link_pb.from_entity.uuid = link.from_entity.uuid
+            link_pb.from_entity.kind = link.from_entity.kind
+            link_pb.from_entity.name = link.from_entity.name
+            link_pb.to_entity.uuid = link.to_entity.uuid
+            link_pb.to_entity.kind = link.to_entity.kind
+            link_pb.to_entity.name = link.to_entity.name
 
-    for link in entity.links_to(context=context):
-        link_pb = pb.links_to.add()
-        link_pb.uuid = link.uuid
-        link_pb.from_entity.uuid = link.from_uuid
-        link_pb.to_entity.uuid = link.to_uuid
-
-    for permission in entity.permissions(context=context):
-        permission_pb = pb.permissions.add()
-        permission_pb.uuid = permission.uuid
-        permission_pb.role.uuid = permission.role_uuid
-        permission_pb.entity.uuid = permission.entity_uuid
-        permission_pb.name = permission.name
+        for permission in entity.permissions(context=context):
+            permission_pb = pb.permissions.add()
+            permission_pb.uuid = permission.uuid
+            permission_pb.role.uuid = permission.role_uuid
+            permission_pb.entity.uuid = permission.entity_uuid
+            permission_pb.name = permission.name
 
     return pb
 
@@ -101,7 +113,7 @@ class DatabaseServicer(kama_pb2_grpc.KamaDatabaseServicer):
         for entity in result:
             try:
                 if combo_filter(entity):
-                    yield entity_to_pb(request_context, entity)
+                    yield entity_to_pb(request_context, entity, detail=False)
             except kama.database.PermissionDeniedException:
                 pass
 
@@ -114,7 +126,7 @@ class DatabaseServicer(kama_pb2_grpc.KamaDatabaseServicer):
             result = kama.database.Entity.get_by_name(entity.kind, entity.name)
 
         if result:
-            return entity_to_pb(request_context, result)
+            return entity_to_pb(request_context, result, detail=True)
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
             return entity
@@ -131,7 +143,7 @@ class DatabaseServicer(kama_pb2_grpc.KamaDatabaseServicer):
             return kama_pb2.Entity()
 
         entity = kama.database.Entity.create(request.entity.kind, request.entity.name, owner)
-        return entity_to_pb(request_context, entity)
+        return entity_to_pb(request_context, entity, detail=True)
 
     def DeleteEntity(self, entity, context):
         request_context = kama.context.get_request_context(context)
@@ -143,7 +155,7 @@ class DatabaseServicer(kama_pb2_grpc.KamaDatabaseServicer):
         request_context = kama.context.get_request_context(context)
         db_entity = kama.database.Entity(entity.uuid)
         db_entity.set_name(entity.name, context=request_context)
-        return entity_to_pb(request_context, db_entity)
+        return entity_to_pb(request_context, db_entity, detail=True)
 
     def AddAttribute(self, pb_attribute, context):
         request_context = kama.context.get_request_context(context)

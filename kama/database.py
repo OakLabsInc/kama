@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
-import MySQLdb as dbapi
+import MySQLdb
+import MySQLdb.cursors
+import threading
 import functools
 import uuid
+import time
 import sys
 import os
 
 import kama.acl
 import kama.log
+
+
+CACHE_TTL = 60.0
 
 
 log = kama.log.get_logger('kama.database')
@@ -50,11 +56,19 @@ def generate_uuid():
     u = (version << 122) | (u.node << 74) | (u.time << 14) | u.clock_seq
     return '%032X' % u
 
+
+class LoggingCursor(MySQLdb.cursors.Cursor):
+    def execute(self, query, args=None):
+        log.debug('execute: %r %% %r', query, args)
+        return MySQLdb.cursors.Cursor.execute(self, query, args)
+
+
 def getenv(keys, default=None):
     for key in keys:
         if key in os.environ:
             return os.environ[key]
     return default
+
 
 class DatabaseContext(object):
     def __init__(self):
@@ -62,8 +76,8 @@ class DatabaseContext(object):
 
     def __enter__(self):
         params = {
-            'host': getenv(['MYSQL_SERVICE_HOST', 'MYSQL_PORT_3306_TCP_ADDR']),
-            'port': int(getenv(['MYSQL_SERVICE_PORT', 'MYSQL_PORT_3306_TCP_PORT'])),
+            'host': getenv(['MYSQL_SERVICE_HOST', 'MYSQL_PORT_3306_TCP_ADDR'], '127.0.0.1'),
+            'port': int(getenv(['MYSQL_SERVICE_PORT', 'MYSQL_PORT_3306_TCP_PORT'], 3306)),
             'user': getenv(['MYSQL_SERVICE_USER'], 'kama'),
             'db': getenv(['MYSQL_SERVICE_DATABASE'], 'kama'),
             'connect_timeout': int(getenv(['MYSQL_CONNECT_TIMEOUT'], 5)),
@@ -74,23 +88,29 @@ class DatabaseContext(object):
         if params['passwd'] is None:
             del params['passwd']
 
-        self.database = dbapi.connect(**params)
+        self.database = MySQLdb.connect(**params)
 
-        with self.database as cursor:
-            cursor.execute('SET NAMES utf8mb4')
-            cursor.execute('SET CHARACTER SET utf8mb4')
-            cursor.execute('SET character_set_connection=utf8mb4')
-        return self.database.__enter__()
+        cursor = self.database.cursor(cursorclass=LoggingCursor)
+        #cursor.execute('SET NAMES utf8mb4')
+        #cursor.execute('SET CHARACTER SET utf8mb4')
+        #cursor.execute('SET character_set_connection=utf8mb4')
+        return cursor
 
     def __exit__(self, *args):
-        log.debug('Closing database connection')
+        log.debug('COMMIT')
         self.database.__exit__(*args)
         self.database.commit()
-        self.database.close()
+
+
+def get_database_context():
+    tlocal = threading.local()
+    if not hasattr(tlocal, 'database_context'):
+        tlocal.database_context = DatabaseContext()
+    return tlocal.database_context
 
 
 def schema_init():
-    with DatabaseContext() as cursor:
+    with get_database_context() as cursor:
         cursor.execute('''
 CREATE TABLE `entities` (
     `entity_uuid` BINARY(16) NOT NULL PRIMARY KEY,
@@ -121,14 +141,14 @@ CREATE TABLE `permissions` (
     `name` TEXT NOT NULL
 )''')
 
-    with DatabaseContext() as cursor:
+    with get_database_context() as cursor:
         cursor.execute('CREATE INDEX `idx_entities_kind` ON `entities` (`kind`(3))')
         cursor.execute('CREATE INDEX `idx_entities_name` ON `entities` (`name`(3))')
         cursor.execute('CREATE INDEX `idx_attributes_key` on `attributes` (`key`(3))')
         cursor.execute('CREATE INDEX `idx_links_to_uuid` ON `links` (`to_uuid`)')
         cursor.execute('CREATE INDEX `idx_links_from_uuid` ON `links` (`from_uuid`)')
 
-    with DatabaseContext() as cursor:
+    with get_database_context() as cursor:
         # We have to manually create the first role and user because
         # new Entities require an owner role to be created.
         role_uuid = generate_uuid()
@@ -188,6 +208,24 @@ def require_permission(name):
     return decorator
 
 
+class Cache(object):
+    def __init__(self):
+        self.entities = {}
+
+    def add(self, entity):
+        expires_at = time.time() + CACHE_TTL
+        self.entities[entity.uuid] = (expires_at, entity)
+
+    def get(self, uuid):
+        if uuid in self.entities:
+            expires_at, entity = self.entities[uuid]
+            if expires_at > time.time():
+                return entity
+            else:
+                del self.entities[uuid]
+        return None
+
+
 class Entity(object):
     def __init__(self, uuid, kind=None, name=None):
         self.uuid = uuid
@@ -216,7 +254,7 @@ class Entity(object):
 
     @classmethod
     def create(cls, kind, name, owner_role):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             entity_uuid = generate_uuid()
             cursor.execute('INSERT INTO entities(entity_uuid, kind, name) VALUES(UNHEX(%s), %s, %s)', (entity_uuid, kind, name))
             self = cls(entity_uuid, kind, name)
@@ -226,7 +264,7 @@ class Entity(object):
 
     @classmethod
     def get_by_name(self, kind, name):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             cursor.execute('SELECT HEX(entity_uuid), kind, name FROM entities WHERE name=%s AND kind=%s', (name, kind))
             row = cursor.fetchone()
             if not row:
@@ -236,18 +274,18 @@ class Entity(object):
 
     @classmethod
     def get_by_kind(self, kind):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             cursor.execute('SELECT HEX(entity_uuid), kind, name FROM entities WHERE kind=%s', (kind,))
             return [Entity(*x) for x in cursor]
 
     @classmethod
     def get_all(cls):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             cursor.execute('SELECT HEX(entity_uuid), kind, name FROM entities')
             return [cls(*x) for x in cursor]
 
     def get(self):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             cursor.execute('SELECT kind, name FROM entities WHERE entity_uuid=UNHEX(%s)', (self.uuid,))
             row = cursor.fetchone()
             if row is None:
@@ -256,7 +294,7 @@ class Entity(object):
 
     @require_permission('entity.delete')
     def delete(self, context=None):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             cursor.execute('DELETE FROM entities WHERE entity_uuid=UNHEX(%s)', (self.uuid,))
             cursor.execute('DELETE FROM attributes WHERE entity_uuid=UNHEX(%s)', (self.uuid,))
             cursor.execute('DELETE FROM links WHERE to_uuid=UNHEX(%s) OR from_uuid=UNHEX(%s)', (self.uuid, self.uuid))
@@ -264,7 +302,7 @@ class Entity(object):
 
     @require_permission('entity.set_name')
     def set_name(self, name, context=None):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             cursor.execute('UPDATE entities SET name=%s WHERE entity_uuid=UNHEX(%s)', (name, self.uuid))
             self.name = name
 
@@ -274,14 +312,14 @@ class Entity(object):
 
     @require_permission('entity.delete_attribute')
     def delete_attributes(self, key, context=None):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             cursor.execute('DELETE FROM attributes WHERE entity_uuid=UNHEX(%s) AND `key`=%s', (self.uuid, key))
             if cursor.rowcount == 0:
                 raise AttributeNotFoundException('No attributes with key=%s on %s' % (key, self))
 
     @require_permission('entity.read_attribute')
     def attributes(self, key=None, context=None):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             if key is not None:
                 cursor.execute('SELECT HEX(attribute_uuid), `key`, `value` FROM attributes WHERE entity_uuid=UNHEX(%s) AND `key`=%s', (self.uuid, key))
             else:
@@ -290,32 +328,40 @@ class Entity(object):
 
     @require_permission('entity.add_link')
     def add_link(self, to_entity, context=None):
-        return Link._create(self.uuid, to_entity.uuid)
+        return Link._create(self, to_entity)
 
     @require_permission('entity.delete_link')
     def delete_link(self, to_entity, context=None):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             cursor.execute('DELETE FROM links WHERE from_uuid=UNHEX(%s) AND to_uuid=UNHEX(%s)', (self.uuid, to_entity.uuid))
             if cursor.rowcount == 0:
                 raise LinkNotFoundException('No link from %s to %s' % (self, to_entity))
 
     @require_permission('entity.read_link')
     def links_from(self, context=None):
-        with DatabaseContext() as cursor:
-            cursor.execute('SELECT HEX(link_uuid), HEX(from_uuid), HEX(to_uuid) FROM links WHERE from_uuid=UNHEX(%s)', (self.uuid,))
-            return [Link(*x) for x in cursor]
+        links = []
+        with get_database_context() as cursor:
+            cursor.execute('SELECT HEX(links.link_uuid), HEX(links.to_uuid), entities.kind, entities.name FROM links, entities WHERE from_uuid=UNHEX(%s) AND entities.entity_uuid=links.to_uuid', (self.uuid,))
+            for link_uuid, to_uuid, to_entity_kind, to_entity_name in cursor:
+                to_entity = Entity(to_uuid, to_entity_kind, to_entity_name)
+                link = Link(link_uuid, self, to_entity)
+                links.append(link)
+        return links
 
     @require_permission('entity.read_link')
     def links_to(self, context=None):
-        with DatabaseContext() as cursor:
-            cursor.execute('SELECT HEX(link_uuid), HEX(from_uuid), HEX(to_uuid) FROM links WHERE to_uuid=UNHEX(%s)', (self.uuid,))
-            return [Link(*x) for x in cursor]
+        links = []
+        with get_database_context() as cursor:
+            cursor.execute('SELECT HEX(link_uuid), HEX(from_uuid), entities.kind, entities.name FROM links, entities WHERE to_uuid=UNHEX(%s) AND entities.entity_uuid=links.from_uuid', (self.uuid,))
+            for link_uuid, from_uuid, from_entity_kind, from_entity_name in cursor:
+                from_entity = Entity(from_uuid, from_entity_kind, from_entity_name)
+                link = Link(link_uuid, from_entity, self)
+                links.append(link)
+        return links
 
     @require_permission('entity.read_link')
     def links(self, context=None):
-        with DatabaseContext() as cursor:
-            cursor.execute('SELECT HEX(link_uuid), HEX(from_uuid), HEX(to_uuid) FROM links WHERE from_uuid=UNHEX(%s) OR to_uuid=UNHEX(%s)', (self.uuid, self.uuid))
-            return [Link(*x) for x in cursor]
+        return self.links_from(context=context) + self.links_to(context=context)
 
     @require_permission('entity.add_permission')
     def add_permission(self, role, name, context=None):
@@ -323,12 +369,12 @@ class Entity(object):
 
     @require_permission('entity.delete_permission')
     def delete_permission(self, role, name, context=None):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             cursor.execute('DELETE FROM permissions WHERE entity_uuid=UNHEX(%s) AND role_uuid=UNHEX(%s) AND name=%s', (self.uuid, role.uuid, name))
 
     @require_permission('entity.read_permission')
     def permissions(self, context=None):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             cursor.execute('SELECT HEX(permission_uuid), HEX(role_uuid), HEX(entity_uuid), name FROM permissions WHERE entity_uuid=UNHEX(%s)', (self.uuid,))
             return [Permission(*x) for x in cursor]
 
@@ -361,14 +407,14 @@ class Attribute(object):
 
     @classmethod
     def _create(cls, entity_uuid, key, value):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             attribute_uuid = generate_uuid()
             cursor.execute('INSERT INTO attributes(attribute_uuid, entity_uuid, `key`, `value`) VALUES(UNHEX(%s), UNHEX(%s), %s, %s)',
                     (attribute_uuid, entity_uuid, key, value))
             return cls(attribute_uuid, entity_uuid, key, value)
 
     def get(self):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             cursor.execute('SELECT HEX(entity_uuid), `key`, `value` FROM attributes WHERE attribute_uuid=UNHEX(%s)', (self.uuid,))
             row = cursor.fetchone()
             if row is None:
@@ -380,20 +426,20 @@ class Attribute(object):
 
 
 class Link(object):
-    def __init__(self, uuid, from_uuid=None, to_uuid=None):
+    def __init__(self, uuid, from_entity=None, to_entity=None):
         self.uuid = uuid
 
-        if from_uuid is None or to_uuid is None:
+        if from_entity is None or to_entity is None:
             self.get()
         else:
-            self.from_uuid = from_uuid
-            self.to_uuid = to_uuid
+            self.from_entity = from_entity
+            self.to_entity = to_entity
 
     def __str__(self):
-        return 'Link %s -> %s' % (self.from_entity(), self.to_entity())
+        return 'Link %s -> %s' % (self.from_entity, self.to_entity)
 
     def __repr__(self):
-        return 'Link(%r, %r, %r)' % (self.uuid, self.from_uuid, self.to_uuid)
+        return 'Link(%r, %r, %r)' % (self.uuid, self.from_entity, self.to_entity)
 
     def __eq__(self, other):
         return self.uuid == other.uuid
@@ -405,26 +451,22 @@ class Link(object):
         return int(self.uuid, 16) - int(other.uuid, 16)
 
     @classmethod
-    def _create(cls, from_uuid, to_uuid):
-        with DatabaseContext() as cursor:
+    def _create(cls, from_entity, to_entity):
+        with get_database_context() as cursor:
             link_uuid = generate_uuid()
             cursor.execute('INSERT INTO links (link_uuid, from_uuid, to_uuid) VALUES(UNHEX(%s), UNHEX(%s), UNHEX(%s))',
-                    (link_uuid, from_uuid, to_uuid))
-            return cls(link_uuid, from_uuid, to_uuid)
+                    (link_uuid, from_entity.uuid, to_entity.uuid))
+            return cls(link_uuid, from_entity, to_entity)
 
     def get(self):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             cursor.execute('SELECT HEX(from_uuid), HEX(to_uuid) FROM links WHERE link_uuid=UNHEX(%s)', (self.uuid,))
             row = cursor.fetchone()
             if row is None:
                 raise LinkNotFoundException(self.uuid)
-            self.from_uuid, self.to_uuid = row
-
-    def from_entity(self):
-        return Entity(self.from_uuid)
-
-    def to_entity(self):
-        return Entity(self.to_uuid)
+            from_uuid, to_uuid = row
+            self.from_entity = Entity(from_uuid)
+            self.to_uuid = Entity(to_uuid)
 
 
 class Permission(object):
@@ -455,14 +497,14 @@ class Permission(object):
 
     @classmethod
     def _create(cls, role_uuid, entity_uuid, name):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             permission_uuid = generate_uuid()
             cursor.execute('INSERT INTO permissions (permission_uuid, role_uuid, entity_uuid, name) VALUES(UNHEX(%s), UNHEX(%s), UNHEX(%s), %s)',
                     (permission_uuid, role_uuid, entity_uuid, name))
             return cls(permission_uuid, role_uuid, entity_uuid, name)
     
     def get(self):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             cursor.execute('SELECT HEX(role_uuid), HEX(entity_uuid), name FROM permissions WHERE permission_uuid=UNHEX(%s)', (self.uuid,))
             row = cursor.fetchone()
             if row is None:
@@ -476,6 +518,6 @@ class Permission(object):
         return Entity(self.role_uuid)
     
     def users(self, context=None):
-        with DatabaseContext() as cursor:
+        with get_database_context() as cursor:
             cursor.execute('SELECT HEX(to_uuid) FROM links WHERE from_uuid=UNHEX(%s)', (self.role_uuid,))
             return [x[0] for x in cursor.fetchall()]

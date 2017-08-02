@@ -33,7 +33,8 @@ setup(
         ],
         entry_points={
             'console_scripts': [
-                'kama=kama.server:main',
+                'kama-server=kama.server:main',
+                'kama=kama.client:main',
             ],
         }
 )

@@ -4,3 +4,6 @@
 build
 dist
 env
+*.cert
+*.key
+*.pem

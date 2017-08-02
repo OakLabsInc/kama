@@ -112,17 +112,14 @@ attributes:\n'''.format(entity=entity)
 
         out += 'links:\n'
         for link in entity.links_from:
-            to_entity = self.get_entity_by_uuid(link.to_entity.uuid)
-            out += '    -> %s %s\n' % (to_entity.kind, to_entity.name)
+            out += '    -> %s %s\n' % (link.to_entity.kind, link.to_entity.name)
 
         for link in entity.links_to:
-            from_entity = self.get_entity_by_uuid(link.from_entity.uuid)
-            out += '    <- %s %s\n' % (from_entity.kind, from_entity.name)
+            out += '    <- %s %s\n' % (link.from_entity.kind, link.from_entity.name)
 
         out += 'permissions:\n'
         for permission in entity.permissions:
-            role = self.get_entity_by_uuid(permission.role.uuid)
-            out += '    {role.name} {permission.name}\n'.format(role=role, permission=permission)
+            out += '    %s %s\n' % (permission.role.name, permission.name)
 
         return out
 
@@ -250,10 +247,10 @@ def permission_delete(args):
 
 
 def setup_arguments(parser):
-    parser.add_argument('--server', default=os.environ.get('KAMA_SERVER', 'kama.example.com:443'))
-    parser.add_argument('--ca-cert', default='secrets/ca-cert.pem')
-    parser.add_argument('--client-key', default='secrets/client.key')
-    parser.add_argument('--client-cert', default='secrets/client.cert')
+    parser.add_argument('--server', default=os.environ.get('KAMA_SERVER', '127.0.0.1:8443'))
+    parser.add_argument('--ca-cert', default='ca-cert.pem')
+    parser.add_argument('--client-key', default='client.key')
+    parser.add_argument('--client-cert', default='client.cert')
     sp = parser.add_subparsers()
 
     # kama dbclient entity ...

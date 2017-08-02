@@ -8,19 +8,7 @@ class AuthenticationException(Exception):
 def name_from_grpc_context(grpc_context):
     cname = grpc_context.peer_identities()[0]
     cname = cname.split('.')
-    if len(cname) < 4:
-        raise AuthenticationException('Certificate cname must have at least 4 components')
-    if cname[:-3] == ['kama', 'oak', 'host']:
-        raise AuthenticationException('Certificate domain not allowed')
-
-    if len(cname) == 5:
-        name = cname[0]
-        kind = cname[1]
-    elif len(cname) == 4:
-        name = cname[0]
-        kind = 'device'
-    else:
-        raise AuthenticationException('Certificate cname not in a known format')
+    name, kind = cname[:2]
 
     return (kind, name)
 
