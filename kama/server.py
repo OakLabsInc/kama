@@ -3,8 +3,8 @@ import argparse
 import itertools
 import functools
 import grpc
-import kama_pb2
-import kama_pb2_grpc
+from . import kama_pb2
+from . import kama_pb2_grpc
 from google.protobuf.empty_pb2 import Empty
 import time
 import os

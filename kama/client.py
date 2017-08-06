@@ -6,8 +6,12 @@ from kama.acl import DEFAULT_ACLS
 from kama import kama_pb2
 from kama import kama_pb2_grpc
 import kama.env
+import kama.log
 
 import argparse
+
+
+log = kama.log.get_logger('kama.client')
 
 
 class KamaDatabaseClient(object):
@@ -20,7 +24,7 @@ class KamaDatabaseClient(object):
             creds = grpc.ssl_channel_credentials(root_pem, client_private_pem, client_public_pem)
             channel = grpc.secure_channel(args.server, creds)
         else:
-            print 'WARNING: Connecting database client over insecure channel'
+            log.warning('Connecting database client over insecure channel')
             channel = grpc.insecure_channel(args.server)
         
         self.stub = kama_pb2_grpc.KamaDatabaseStub(channel)
@@ -128,16 +132,16 @@ attributes:\n'''.format(entity=entity)
 def list_entities(args):
     client = KamaDatabaseClient(args)
     for entity in client.list_entities(kind=args.kind):
-        print entity.kind, entity.name
+        print(entity.kind, entity.name)
 
 def get_entity(args):
     client = KamaDatabaseClient(args)
-    print client.pb_to_human(client.get_entity(args.kind, args.name))
+    print(client.pb_to_human(client.get_entity(args.kind, args.name)))
 
 def create_entity(args):
     client = KamaDatabaseClient(args)
     entity = client.create_entity(args.kind, args.name, args.owner_role)
-    print client.pb_to_human(entity)
+    print(client.pb_to_human(entity))
 
 def delete_entity(args):
     client = KamaDatabaseClient(args)
@@ -148,7 +152,7 @@ def rename_entity(args):
     client = KamaDatabaseClient(args)
     entity = client.get_entity(args.kind, args.old_name)
     entity = client.update_entity(entity.uuid, args.new_name)
-    print client.pb_to_human(entity)
+    print(client.pb_to_human(entity))
 
 
 def attribute_add(args):
@@ -171,7 +175,7 @@ def attribute_list(args):
         attributes = entity.attributes
 
     for attribute in attributes:
-        print '%s=%s' % (attribute.key, attribute.value.encode('utf-8'))
+        print('%s=%s' % (attribute.key, attribute.value.encode('utf-8')))
 
 
 def link_add(args):
@@ -217,7 +221,7 @@ def link_get(args):
     entity = client.get_entity(args.entity_kind, args.entity_name)
 
     for result in _traverse_links(client, entity, args.parents, args.children, args.recursive):
-        print result.kind, result.name
+        print(result.kind, result.name)
 
 
 def permission_add(args):
