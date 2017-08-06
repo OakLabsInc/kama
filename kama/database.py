@@ -17,6 +17,7 @@ CACHE_TTL = 60.0
 
 
 log = kama.log.get_logger('kama.database')
+audit_log = kama.log.get_logger('kama.audit')
 tlocal = threading.local()
 
 
@@ -69,28 +70,43 @@ class DatabaseContext(object):
     def __init__(self):
         self.database = None
 
-    def __enter__(self):
-        if self.database is None:
-            params = {
-                'host': kama.env.get(['MYSQL_SERVICE_HOST', 'MYSQL_PORT_3306_TCP_ADDR'], '127.0.0.1'),
-                'port': int(kama.env.get(['MYSQL_SERVICE_PORT', 'MYSQL_PORT_3306_TCP_PORT'], 3306)),
-                'user': kama.env.get(['MYSQL_SERVICE_USER'], 'kama'),
-                'db': kama.env.get(['MYSQL_SERVICE_DATABASE'], 'kama'),
-                'connect_timeout': int(kama.env.get(['MYSQL_CONNECT_TIMEOUT'], 5)),
-            }
-            log.debug('Connecting to database with params: %r', params)
+    def __enter__(self, retries=0):
+        try:
+            if self.database is None:
+                params = {
+                    'host': kama.env.get(['MYSQL_SERVICE_HOST', 'MYSQL_PORT_3306_TCP_ADDR'], '127.0.0.1'),
+                    'port': int(kama.env.get(['MYSQL_SERVICE_PORT', 'MYSQL_PORT_3306_TCP_PORT'], 3306)),
+                    'user': kama.env.get(['MYSQL_SERVICE_USER'], 'kama'),
+                    'db': kama.env.get(['MYSQL_SERVICE_DATABASE'], 'kama'),
+                    'connect_timeout': int(kama.env.get(['MYSQL_CONNECT_TIMEOUT'], 5)),
+                }
+                log.debug('Connecting to database with params: %r', params)
 
-            params['passwd'] = kama.env.get(['MYSQL_SERVICE_PASSWORD'])
-            if params['passwd'] is None:
-                del params['passwd']
+                params['passwd'] = kama.env.get(['MYSQL_SERVICE_PASSWORD'])
+                if params['passwd'] is None:
+                    del params['passwd']
 
-            self.database = MySQLdb.connect(**params)
+                self.database = MySQLdb.connect(**params)
 
-        cursor = self.database.cursor(cursorclass=LoggingCursor)
-        #cursor.execute('SET NAMES utf8mb4')
-        #cursor.execute('SET CHARACTER SET utf8mb4')
-        #cursor.execute('SET character_set_connection=utf8mb4')
-        return cursor
+            cursor = self.database.cursor(cursorclass=LoggingCursor)
+            cursor.execute('SELECT VERSION()')
+            version = cursor.fetchall()[0][0]
+            log.debug('Connected to database %s' % version)
+            #cursor.execute('SET NAMES utf8mb4')
+            #cursor.execute('SET CHARACTER SET utf8mb4')
+            #cursor.execute('SET character_set_connection=utf8mb4')
+            return cursor
+        except Exception as e:
+            log.warning('Database error: %s', str(e))
+            if self.database is not None:
+                self.database.close()
+                self.database = None
+            retries += 1
+            if retries > 2:
+                log.error('Max retries hit, hard fail.')
+                raise
+            log.info('Retrying database connection, retry #%i' % retries)
+            return self.__enter__(retries=retries)
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
         self.database.__exit__(exc_type, exc_value, exc_traceback)
@@ -279,16 +295,23 @@ class Entity(object):
             cursor.execute('DELETE FROM attributes WHERE entity_uuid=UNHEX(%s)', (self.uuid,))
             cursor.execute('DELETE FROM links WHERE to_uuid=UNHEX(%s) OR from_uuid=UNHEX(%s)', (self.uuid, self.uuid))
             cursor.execute('DELETE FROM permissions WHERE entity_uuid=UNHEX(%s) OR role_uuid=UNHEX(%s)', (self.uuid, self.uuid))
+        if isinstance(context, RequestContext):
+            audit_log.info('%s entity.delete %s', context.user, self)
 
     @require_permission('entity.set_name')
     def set_name(self, name, context=None):
         with get_database_context() as cursor:
             cursor.execute('UPDATE entities SET name=%s WHERE entity_uuid=UNHEX(%s)', (name, self.uuid))
             self.name = name
+        if isinstance(context, RequestContext):
+            audit_log.info('%s entity.set_name %s', context.user, self)
 
     @require_permission('entity.add_attribute')
     def add_attribute(self, key, value, context=None):
-        return Attribute._create(self.uuid, key, value)
+        attribute = Attribute._create(self.uuid, key, value)
+        if isinstance(context, RequestContext):
+            audit_log.info('%s entity.add_attribute %s', context.user, attribute)
+        return attribute
 
     @require_permission('entity.delete_attribute')
     def delete_attributes(self, key, context=None):
@@ -296,6 +319,8 @@ class Entity(object):
             cursor.execute('DELETE FROM attributes WHERE entity_uuid=UNHEX(%s) AND `key`=%s', (self.uuid, key))
             if cursor.rowcount == 0:
                 raise AttributeNotFoundException('No attributes with key=%s on %s' % (key, self))
+        if isinstance(context, RequestContext):
+            audit_log.info('%s entity.delete_attribute key=%s', context.user, key)
 
     @require_permission('entity.read_attribute')
     def attributes(self, key=None, context=None):
@@ -304,11 +329,16 @@ class Entity(object):
                 cursor.execute('SELECT HEX(attribute_uuid), `key`, `value` FROM attributes WHERE entity_uuid=UNHEX(%s) AND `key`=%s', (self.uuid, key))
             else:
                 cursor.execute('SELECT HEX(attribute_uuid), `key`, `value` FROM attributes WHERE entity_uuid=UNHEX(%s)', (self.uuid,))
+            if isinstance(context, RequestContext):
+                audit_log.info('%s entity.read_attribute key=%s', context.user, key)
             return [Attribute(*x) for x in cursor]
 
     @require_permission('entity.add_link')
     def add_link(self, to_entity, context=None):
-        return Link._create(self, to_entity)
+        link = Link._create(self, to_entity)
+        if isinstance(context, RequestContext):
+            audit_log.info('%s entity.add_link %s', context.user, link)
+        return link
 
     @require_permission('entity.delete_link')
     def delete_link(self, to_entity, context=None):
@@ -316,6 +346,8 @@ class Entity(object):
             cursor.execute('DELETE FROM links WHERE from_uuid=UNHEX(%s) AND to_uuid=UNHEX(%s)', (self.uuid, to_entity.uuid))
             if cursor.rowcount == 0:
                 raise LinkNotFoundException('No link from %s to %s' % (self, to_entity))
+        if isinstance(context, RequestContext):
+            audit_log.info('%s entity.delete_link %s -> %s', context.user, self, to_entity)
 
     @require_permission('entity.read_link')
     def links_from(self, context=None):
@@ -326,6 +358,8 @@ class Entity(object):
                 to_entity = Entity(to_uuid, to_entity_kind, to_entity_name)
                 link = Link(link_uuid, self, to_entity)
                 links.append(link)
+        if isinstance(context, RequestContext):
+            audit_log.info('%s entity.read_link %s', context.user, self)
         return links
 
     @require_permission('entity.read_link')
@@ -337,6 +371,8 @@ class Entity(object):
                 from_entity = Entity(from_uuid, from_entity_kind, from_entity_name)
                 link = Link(link_uuid, from_entity, self)
                 links.append(link)
+        if isinstance(context, RequestContext):
+            audit_log.info('%s entity.read_link %s', context.user, self)
         return links
 
     @require_permission('entity.read_link')
@@ -345,12 +381,17 @@ class Entity(object):
 
     @require_permission('entity.add_permission')
     def add_permission(self, role, name, context=None):
-        return Permission._create(role, self, name)
+        permission = Permission._create(role, self, name)
+        if isinstance(context, RequestContext):
+            audit_log.info('%s entity.add_permission %s', context.user, permission)
+        return permission
 
     @require_permission('entity.delete_permission')
     def delete_permission(self, role, name, context=None):
         with get_database_context() as cursor:
             cursor.execute('DELETE FROM permissions WHERE entity_uuid=UNHEX(%s) AND role_uuid=UNHEX(%s) AND name=%s', (self.uuid, role.uuid, name))
+        if isinstance(context, RequestContext):
+            audit_log.info('%s entity.delete_permission %s %s %s', context.user, self, role, name)
 
     @require_permission('entity.read_permission')
     def permissions(self, context=None):
@@ -361,6 +402,8 @@ class Entity(object):
                 role = Entity(role_uuid, role_kind, role_name)
                 permission = Permission(permission_uuid, role, self, name)
                 permissions.append(permission)
+        if isinstance(context, RequestContext):
+            audit_log.info('%s entity.read_permission %s', context.user, self)
         return permissions
 
     def has_permission(self, entity, name):
