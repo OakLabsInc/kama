@@ -132,7 +132,7 @@ attributes:\n'''.format(entity=entity)
 def list_entities(args):
     client = KamaDatabaseClient(args)
     for entity in client.list_entities(kind=args.kind):
-        print(entity.kind, entity.name)
+        print('%s %s' % (entity.kind, entity.name))
 
 def get_entity(args):
     client = KamaDatabaseClient(args)
@@ -221,7 +221,7 @@ def link_get(args):
     entity = client.get_entity(args.entity_kind, args.entity_name)
 
     for result in _traverse_links(client, entity, args.parents, args.children, args.recursive):
-        print(result.kind, result.name)
+        print('%s %s' % (result.kind, result.name))
 
 
 def permission_add(args):
