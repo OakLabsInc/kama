@@ -139,7 +139,7 @@ class DatabaseServicer(kama_pb2_grpc.KamaDatabaseServicer):
         request_context = kama.context.get_request_context(context)
         owner = kama.database.Entity(request.owner_role.uuid)
 
-        if not owner in [x.from_entity() for x in request_context.user.links_to(context=request_context)]:
+        if not owner in [x.from_entity for x in request_context.user.links_to(context=request_context)]:
             # It's a bad idea to create entities owned by roles that you're not
             # a member of, because then you cannot get or modify the new
             # entity. We disallow this to prevent foot shooting.
