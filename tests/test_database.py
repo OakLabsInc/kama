@@ -223,6 +223,11 @@ class TestDatabase(unittest.TestCase):
         entities = kama.database.Entity.get_by_kind('device')
         self.assertEqual(entities, [test16])
 
+        test16.add_attribute('testkey', 'testvalue', context=self.context)
+        self.assertEqual(kama.database.Entity.get_by_attribute(key='testkey'), [test16])
+        self.assertEqual(kama.database.Entity.get_by_attribute(key='testkey', value='testvalue'), [test16])
+        self.assertEqual(kama.database.Entity.get_by_attribute(key='nokey'), [])
+
     def test_entity_rename(self):
         test17 = kama.database.Entity.create('device', 'test17', self.root_role)
         test17.set_name('test18', context=self.context)
