@@ -19,7 +19,7 @@ from setuptools import setup
 
 setup(
         name='kama',
-        version='1.1.1',
+        version='1.2.0',
         description='A truth database',
         url='https://kama.sh/',
         author='Jeremy Grosser',
