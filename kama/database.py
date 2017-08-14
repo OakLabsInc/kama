@@ -275,7 +275,7 @@ class Entity(object):
             return [Entity(*x) for x in cursor]
 
     @classmethod
-    def get_by_attribute(self, key, value=None):
+    def get_by_attribute(cls, key, value=None):
         with get_database_context() as cursor:
             if value is not None:
                 cursor.execute('SELECT DISTINCT HEX(entities.entity_uuid), entities.kind, entities.name FROM attributes, entities WHERE attributes.key=%s AND attributes.value=%s AND entities.entity_uuid=attributes.entity_uuid', (key, value))
