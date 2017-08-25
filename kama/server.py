@@ -23,7 +23,7 @@ def entity_to_pb(context, entity, attributes=True, links=True, permissions=True)
     pb.name = entity.name
     pb.kind = entity.kind
 
-    if detail:
+    if attributes:
         for attribute in entity.attributes(context=context):
             attribute_pb = pb.attributes.add()
             attribute_pb.uuid = attribute.uuid
