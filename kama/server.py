@@ -119,7 +119,7 @@ class DatabaseServicer(kama_pb2_grpc.KamaDatabaseServicer):
         for entity in result:
             try:
                 if combo_filter(entity):
-                    yield entity_to_pb(request_context, entity, attributes=False, links=False, permission=False)
+                    yield entity_to_pb(request_context, entity, attributes=False, links=False, permissions=False)
             except kama.database.PermissionDeniedException:
                 pass
 
