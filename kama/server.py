@@ -17,7 +17,7 @@ import kama.log
 log = kama.log.get_logger('kama.server')
 
 
-def entity_to_pb(context, entity, detail=True):
+def entity_to_pb(context, entity, attributes=True, links=True, permissions=True):
     pb = kama_pb2.Entity()
     pb.uuid = entity.uuid
     pb.name = entity.name
@@ -33,6 +33,7 @@ def entity_to_pb(context, entity, detail=True):
             attribute_pb.key = attribute.key
             attribute_pb.value = attribute.value
 
+    if links:
         for link in entity.links_from(context=context):
             link_pb = pb.links_from.add()
             link_pb.uuid = link.uuid
@@ -53,6 +54,7 @@ def entity_to_pb(context, entity, detail=True):
             link_pb.to_entity.kind = link.to_entity.kind
             link_pb.to_entity.name = link.to_entity.name
 
+    if permissions:
         for permission in entity.permissions(context=context):
             permission_pb = pb.permissions.add()
             permission_pb.uuid = permission.uuid
@@ -117,7 +119,7 @@ class DatabaseServicer(kama_pb2_grpc.KamaDatabaseServicer):
         for entity in result:
             try:
                 if combo_filter(entity):
-                    yield entity_to_pb(request_context, entity, detail=False)
+                    yield entity_to_pb(request_context, entity, attributes=False, links=False, permission=False)
             except kama.database.PermissionDeniedException:
                 pass
 
@@ -130,7 +132,7 @@ class DatabaseServicer(kama_pb2_grpc.KamaDatabaseServicer):
             result = kama.database.Entity.get_by_name(entity.kind, entity.name)
 
         if result:
-            return entity_to_pb(request_context, result, detail=True)
+            return entity_to_pb(request_context, result)
         else:
             context.set_code(grpc.StatusCode.NOT_FOUND)
             return entity
@@ -147,7 +149,7 @@ class DatabaseServicer(kama_pb2_grpc.KamaDatabaseServicer):
             return kama_pb2.Entity()
 
         entity = kama.database.Entity.create(request.entity.kind, request.entity.name, owner)
-        return entity_to_pb(request_context, entity, detail=True)
+        return entity_to_pb(request_context, entity)
 
     def DeleteEntity(self, entity, context):
         request_context = kama.context.get_request_context(context)
@@ -159,7 +161,7 @@ class DatabaseServicer(kama_pb2_grpc.KamaDatabaseServicer):
         request_context = kama.context.get_request_context(context)
         db_entity = kama.database.Entity(entity.uuid)
         db_entity.set_name(entity.name, context=request_context)
-        return entity_to_pb(request_context, db_entity, detail=True)
+        return entity_to_pb(request_context, db_entity)
 
     def AddAttribute(self, pb_attribute, context):
         request_context = kama.context.get_request_context(context)
