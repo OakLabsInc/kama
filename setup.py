@@ -40,6 +40,7 @@ setup(
         entry_points={
             'console_scripts': [
                 'kama-server=kama.server:main',
+                'kama-shell=kama.shell:main',
                 'kama=kama.client:main',
             ],
         }

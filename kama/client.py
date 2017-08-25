@@ -8,14 +8,36 @@ from kama import kama_pb2_grpc
 import kama.env
 import kama.log
 
+import collections
 import argparse
 
 
 log = kama.log.get_logger('kama.client')
 
 
+KamaClientConfig = collections.namedtuple('KamaConfig', 'server ca_cert client_key client_cert')
+
+
+DEFAULT_CONFIG = KamaClientConfig(
+        server='127.0.0.1:8443',
+        ca_cert='ca-cert.pem',
+        client_key='client.key',
+        client_cert='client.cert')
+
+
+ENV_CONFIG = KamaClientConfig(
+        server=kama.env.get(['KAMA_SERVER'], DEFAULT_CONFIG.server),
+        ca_cert=kama.env.get(['KAMA_CA_CERT'], DEFAULT_CONFIG.ca_cert),
+        client_key=kama.env.get(['KAMA_CLIENT_KEY'], DEFAULT_CONFIG.client_key),
+        client_cert=kama.env.get(['KAMA_CLIENT_CERT'], DEFAULT_CONFIG.client_cert))
+
+
 class KamaDatabaseClient(object):
+    '''
+    This is a thin wrapper around the raw GRPC protobuf interface to Kama
+    '''
     def __init__(self, args):
+        log.debug(args)
         if args.ca_cert is not None:
             root_pem = open(args.ca_cert, 'r').read()
             client_private_pem = open(args.client_key, 'r').read()
@@ -30,23 +52,59 @@ class KamaDatabaseClient(object):
         self.stub = kama_pb2_grpc.KamaDatabaseStub(channel)
 
     def list_entities(self, kind=None):
+        '''
+        Returns an iterable of Entities, optionally filtered by kind.
+        '''
         query = kama_pb2.Entity()
         if kind:
             query.kind = kind
         return self.stub.ListEntities(query)
 
     def get_entity(self, kind, name):
+        '''
+        Queries kama for an Entity with the given kind and name
+
+        Required permissions:
+            entity.read_attribute
+            entity.read_link
+            entity.read_permission
+        '''
         entity = kama_pb2.Entity()
         entity.kind = kind
         entity.name = name
         return self.stub.GetEntity(entity)
     
     def get_entity_by_uuid(self, uuid):
+        '''
+        Queries kama for an Entity with the given UUID
+
+        Required permissions:
+            entity.read_attribute
+            entity.read_link
+            entity.read_permission
+        '''
         entity = kama_pb2.Entity()
         entity.uuid = uuid
         return self.stub.GetEntity(entity)
 
     def create_entity(self, kind, name, owner_role_name):
+        '''
+        Create a new Entity.
+        
+        `owner_role_name` must be the name of an existing Entity with the kind
+        `role` that has a link to your user Entity. If you're working from a
+        newly initialized database, the `root` role and user are guaranteed to
+        exist.
+
+        You must be a member of the owner role in order to create new Entities
+        owned by it.
+
+        Required permissions (on the owner role):
+            entity.read_attribute
+            entity.read_link
+            entity.read_permission
+            entity.add_link
+        '''
         request = kama_pb2.CreateEntityRequest()
         request.entity.kind = kind
         request.entity.name = name
@@ -56,11 +114,23 @@ class KamaDatabaseClient(object):
         return self.stub.CreateEntity(request)
     
     def delete_entity(self, uuid):
+        '''
+        Delete an Entity
+
+        Required permissions:
+            entity.delete
+        '''
         entity = kama_pb2.Entity()
         entity.uuid = uuid
         return self.stub.DeleteEntity(entity)
 
     def update_entity(self, uuid, name):
+        '''
+        Rename an existing Entity
+
+        Required permissions:
+            entity.set_name
+        '''
         entity = kama_pb2.Entity()
         entity.uuid = uuid
         entity.name = name
@@ -68,6 +138,12 @@ class KamaDatabaseClient(object):
         return new_entity
 
     def add_attribute(self, entity_uuid, key, value):
+        '''
+        Add an attribute to the Entity with the given UUID
+
+        Required permissions:
+            entity.add_attribute
+        '''
         attribute = kama_pb2.Attribute()
         attribute.entity.uuid = entity_uuid
         attribute.key = key
@@ -75,24 +151,48 @@ class KamaDatabaseClient(object):
         return self.stub.AddAttribute(attribute)
 
     def delete_attributes(self, entity_uuid, key):
+        '''
+        Delete all attributes with the given key from an Entity
+
+        Required permissions:
+            entity.delete_attribute
+        '''
         attribute = kama_pb2.Attribute()
         attribute.entity.uuid = entity_uuid
         attribute.key = key
         return self.stub.DeleteAttributes(attribute)
 
     def add_link(self, from_uuid, to_uuid):
+        '''
+        Add a link from an Entity to another Entity
+
+        Required permissions:
+            entity.add_link
+        '''
         link = kama_pb2.Link()
         link.from_entity.uuid = from_uuid
         link.to_entity.uuid = to_uuid
         return self.stub.AddLink(link)
 
     def delete_link(self, from_uuid, to_uuid):
+        '''
+        Delete a link from an Entity to another Entity
+
+        Required permissions:
+            entity.delete_link
+        '''
         link = kama_pb2.Link()
         link.from_entity.uuid = from_uuid
         link.to_entity.uuid = to_uuid
         return self.stub.DeleteLink(link)
 
     def add_permission(self, entity_uuid, role_uuid, name):
+        '''
+        Add a permission for all members of a role on an Entity
+
+        Required permissions:
+            entity.add_permission
+        '''
         permission = kama_pb2.Permission()
         permission.entity.uuid = entity_uuid
         permission.role.uuid = role_uuid
@@ -100,6 +200,12 @@ class KamaDatabaseClient(object):
         return self.stub.AddPermission(permission)
 
     def delete_permission(self, entity_uuid, role_uuid, name):
+        '''
+        Delete a permission from a role
+
+        Required permissions:
+            entity.delete_permission
+        '''
         permission = kama_pb2.Permission()
         permission.entity.uuid = entity_uuid
         permission.role.uuid = role_uuid
@@ -107,6 +213,9 @@ class KamaDatabaseClient(object):
         return self.stub.DeletePermission(permission)
 
     def pb_to_human(self, entity):
+        '''
+        Format an Entity protobuf object into a human readable string
+        '''
         out = '''name:    {entity.name}
 kind:    {entity.kind}
 uuid:    {entity.uuid}
@@ -252,10 +361,10 @@ def permission_delete(args):
 
 
 def setup_arguments(parser):
-    parser.add_argument('--server', default=kama.env.get(['KAMA_SERVER'], '127.0.0.1:8443'))
-    parser.add_argument('--ca-cert', default=kama.env.get(['KAMA_CA_CERT'], 'ca-cert.pem'))
-    parser.add_argument('--client-key', default=kama.env.get(['KAMA_CLIENT_KEY'], 'client.key'))
-    parser.add_argument('--client-cert', default=kama.env.get(['KAMA_CLIENT_CERT'], 'client.cert'))
+    parser.add_argument('--server', default=ENV_CONFIG.server)
+    parser.add_argument('--ca-cert', default=ENV_CONFIG.ca_cert)
+    parser.add_argument('--client-key', default=ENV_CONFIG.client_key)
+    parser.add_argument('--client-cert', default=ENV_CONFIG.client_cert)
     sp = parser.add_subparsers()
 
     # kama dbclient entity ...
@@ -355,6 +464,24 @@ def setup_arguments(parser):
     parser_permission_delete.add_argument('role_name')
     parser_permission_delete.add_argument('permission_name')
     parser_permission_delete.set_defaults(func=permission_delete)
+
+
+def connect(server=None, ca_cert=None, client_key=None, client_cert=None):
+    '''
+    Use this method to get an instantiated KamaDatabaseClient instance for use
+    in other scripts
+    '''
+    if server is None:
+        server = ENV_CONFIG.server
+    if ca_cert is None:
+        ca_cert = ENV_CONFIG.ca_cert
+    if client_key is None:
+        client_key = ENV_CONFIG.client_key
+    if client_cert is None:
+        client_cert = ENV_CONFIG.client_cert
+
+    config = KamaClientConfig(server, ca_cert, client_key, client_cert)
+    return KamaDatabaseClient(config)
 
 
 def main():
