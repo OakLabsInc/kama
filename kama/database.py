@@ -330,7 +330,7 @@ class Entity(object):
             if cursor.rowcount == 0:
                 raise AttributeNotFoundException('No attributes with key=%s on %s' % (key, self))
         if isinstance(context, RequestContext):
-            audit_log.info('%s entity.delete_attribute key=%s', context.user, key)
+            audit_log.info('%s entity.delete_attribute %s key=%s', context.user, self, key)
 
     @require_permission('entity.read_attribute')
     def attributes(self, key=None, context=None):
@@ -340,7 +340,7 @@ class Entity(object):
             else:
                 cursor.execute('SELECT HEX(attribute_uuid), `key`, `value` FROM attributes WHERE entity_uuid=UNHEX(%s)', (self.uuid,))
             if isinstance(context, RequestContext):
-                audit_log.info('%s entity.read_attribute key=%s', context.user, key)
+                audit_log.info('%s entity.read_attribute %s key=%s', context.user, self, key)
             return [Attribute(*x) for x in cursor]
 
     @require_permission('entity.add_link')
