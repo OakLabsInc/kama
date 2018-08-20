@@ -31,11 +31,14 @@ setup(
         ],
         packages=['kama'],
         install_requires=[
-            'grpcio==1.4.0',
-# We don't explicitly depend on MySQL-python because it's only required on the
-# server and we don't want to introduce an unnecessary dependency for clients
-# importing the library
-#           'MySQL-python==1.2.5',
+            'enum34==1.1.6,',
+            'futures==3.2.0',
+            'grpcio==1.14.1',
+            # We don't explicitly depend on MySQL-python because it's only required on the
+            # server and we don't want to introduce an unnecessary dependency for clients
+            # importing the library
+            #'MySQL-python==1.2.5',
+            'six==1.11.0'
         ],
         entry_points={
             'console_scripts': [
