@@ -31,7 +31,7 @@ setup(
         ],
         packages=['kama'],
         install_requires=[
-            'enum34==1.1.6,',
+            'enum34==1.1.6',
             'futures==3.2.0',
             'grpcio==1.14.1',
             'six==1.11.0'
