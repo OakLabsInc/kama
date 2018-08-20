@@ -1,6 +1,5 @@
 enum34==1.1.6
 futures==3.2.0
 grpcio==1.14.1
-kama==1.2.5
 MySQL-python==1.2.5
 six==1.11.0
