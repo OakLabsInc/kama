@@ -19,7 +19,7 @@ from setuptools import setup
 
 setup(
         name='kama',
-        version='1.2.5',
+        version='1.3.0',
         description='A truth database',
         url='https://kama.sh/',
         author='Jeremy Grosser',
@@ -31,11 +31,13 @@ setup(
         ],
         packages=['kama'],
         install_requires=[
-            'grpcio==1.4.0',
-# We don't explicitly depend on MySQL-python because it's only required on the
-# server and we don't want to introduce an unnecessary dependency for clients
-# importing the library
-#           'MySQL-python==1.2.5',
+            'grpcio==1.14.1'
+        ],
+        tests_require = [
+            # We don't explicitly depend on MySQL-python because it's only required on the
+            # server and in tests, and we don't want to introduce an unnecessary dependency for clients
+            # importing the library
+            'MySQL-python==1.2.5'
         ],
         entry_points={
             'console_scripts': [

@@ -1,9 +1,22 @@
 FROM alpine:3.6
-RUN apk add --no-cache bash python python-dev openssl-dev py-pip py-mysqldb alpine-sdk
-RUN pip install pip --upgrade
-RUN pip install grpcio
-RUN pip install nose
+RUN apk add --no-cache \
+  bash \
+  python \
+  python-dev \
+  openssl-dev \
+  py-pip \
+  py-mysqldb \
+  alpine-sdk
 
 WORKDIR /kama
+
+RUN pip install pip --upgrade
+
+COPY requirements.txt .
+
+RUN pip install -r requirements.txt \
+    && pip install nose
+
 COPY . .
+
 RUN pip install .
