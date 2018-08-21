@@ -31,10 +31,7 @@ setup(
         ],
         packages=['kama'],
         install_requires=[
-            'enum34==1.1.6',
-            'futures==3.2.0',
-            'grpcio==1.14.1',
-            'six==1.11.0'
+            'grpcio==1.14.1'
         ],
         tests_require = [
             # We don't explicitly depend on MySQL-python because it's only required on the
