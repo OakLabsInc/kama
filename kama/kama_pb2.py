@@ -40,49 +40,49 @@ _ENTITY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='name', full_name='kama.Entity.name', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='kind', full_name='kama.Entity.kind', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='attributes', full_name='kama.Entity.attributes', index=3,
       number=4, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='links_from', full_name='kama.Entity.links_from', index=4,
       number=5, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='links_to', full_name='kama.Entity.links_to', index=5,
       number=6, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='permissions', full_name='kama.Entity.permissions', index=6,
       number=7, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -113,28 +113,28 @@ _ATTRIBUTE = _descriptor.Descriptor(
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='entity', full_name='kama.Attribute.entity', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='key', full_name='kama.Attribute.key', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='value', full_name='kama.Attribute.value', index=3,
       number=4, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -165,21 +165,21 @@ _LINK = _descriptor.Descriptor(
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='from_entity', full_name='kama.Link.from_entity', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='to_entity', full_name='kama.Link.to_entity', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -210,28 +210,28 @@ _PERMISSION = _descriptor.Descriptor(
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='role', full_name='kama.Permission.role', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='entity', full_name='kama.Permission.entity', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='name', full_name='kama.Permission.name', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -262,14 +262,14 @@ _CREATEENTITYREQUEST = _descriptor.Descriptor(
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='owner_role', full_name='kama.CreateEntityRequest.owner_role', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -340,460 +340,118 @@ CreateEntityRequest = _reflection.GeneratedProtocolMessageType('CreateEntityRequ
 _sym_db.RegisterMessage(CreateEntityRequest)
 
 
-try:
-  # THESE ELEMENTS WILL BE DEPRECATED.
-  # Please use the generated *_pb2_grpc.py files instead.
-  import grpc
-  from grpc.beta import implementations as beta_implementations
-  from grpc.beta import interfaces as beta_interfaces
-  from grpc.framework.common import cardinality
-  from grpc.framework.interfaces.face import utilities as face_utilities
 
+_KAMADATABASE = _descriptor.ServiceDescriptor(
+  name='KamaDatabase',
+  full_name='kama.KamaDatabase',
+  file=DESCRIPTOR,
+  index=0,
+  options=None,
+  serialized_start=603,
+  serialized_end=1170,
+  methods=[
+  _descriptor.MethodDescriptor(
+    name='ListEntities',
+    full_name='kama.KamaDatabase.ListEntities',
+    index=0,
+    containing_service=None,
+    input_type=_ENTITY,
+    output_type=_ENTITY,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='GetEntity',
+    full_name='kama.KamaDatabase.GetEntity',
+    index=1,
+    containing_service=None,
+    input_type=_ENTITY,
+    output_type=_ENTITY,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='CreateEntity',
+    full_name='kama.KamaDatabase.CreateEntity',
+    index=2,
+    containing_service=None,
+    input_type=_CREATEENTITYREQUEST,
+    output_type=_ENTITY,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='DeleteEntity',
+    full_name='kama.KamaDatabase.DeleteEntity',
+    index=3,
+    containing_service=None,
+    input_type=_ENTITY,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='UpdateEntity',
+    full_name='kama.KamaDatabase.UpdateEntity',
+    index=4,
+    containing_service=None,
+    input_type=_ENTITY,
+    output_type=_ENTITY,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='AddAttribute',
+    full_name='kama.KamaDatabase.AddAttribute',
+    index=5,
+    containing_service=None,
+    input_type=_ATTRIBUTE,
+    output_type=_ATTRIBUTE,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='DeleteAttributes',
+    full_name='kama.KamaDatabase.DeleteAttributes',
+    index=6,
+    containing_service=None,
+    input_type=_ATTRIBUTE,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='AddLink',
+    full_name='kama.KamaDatabase.AddLink',
+    index=7,
+    containing_service=None,
+    input_type=_LINK,
+    output_type=_LINK,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='DeleteLink',
+    full_name='kama.KamaDatabase.DeleteLink',
+    index=8,
+    containing_service=None,
+    input_type=_LINK,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='AddPermission',
+    full_name='kama.KamaDatabase.AddPermission',
+    index=9,
+    containing_service=None,
+    input_type=_PERMISSION,
+    output_type=_PERMISSION,
+    options=None,
+  ),
+  _descriptor.MethodDescriptor(
+    name='DeletePermission',
+    full_name='kama.KamaDatabase.DeletePermission',
+    index=10,
+    containing_service=None,
+    input_type=_PERMISSION,
+    output_type=google_dot_protobuf_dot_empty__pb2._EMPTY,
+    options=None,
+  ),
+])
+_sym_db.RegisterServiceDescriptor(_KAMADATABASE)
 
-  class KamaDatabaseStub(object):
-    # missing associated documentation comment in .proto file
-    pass
+DESCRIPTOR.services_by_name['KamaDatabase'] = _KAMADATABASE
 
-    def __init__(self, channel):
-      """Constructor.
-
-      Args:
-        channel: A grpc.Channel.
-      """
-      self.ListEntities = channel.unary_stream(
-          '/kama.KamaDatabase/ListEntities',
-          request_serializer=Entity.SerializeToString,
-          response_deserializer=Entity.FromString,
-          )
-      self.GetEntity = channel.unary_unary(
-          '/kama.KamaDatabase/GetEntity',
-          request_serializer=Entity.SerializeToString,
-          response_deserializer=Entity.FromString,
-          )
-      self.CreateEntity = channel.unary_unary(
-          '/kama.KamaDatabase/CreateEntity',
-          request_serializer=CreateEntityRequest.SerializeToString,
-          response_deserializer=Entity.FromString,
-          )
-      self.DeleteEntity = channel.unary_unary(
-          '/kama.KamaDatabase/DeleteEntity',
-          request_serializer=Entity.SerializeToString,
-          response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-          )
-      self.UpdateEntity = channel.unary_unary(
-          '/kama.KamaDatabase/UpdateEntity',
-          request_serializer=Entity.SerializeToString,
-          response_deserializer=Entity.FromString,
-          )
-      self.AddAttribute = channel.unary_unary(
-          '/kama.KamaDatabase/AddAttribute',
-          request_serializer=Attribute.SerializeToString,
-          response_deserializer=Attribute.FromString,
-          )
-      self.DeleteAttributes = channel.unary_unary(
-          '/kama.KamaDatabase/DeleteAttributes',
-          request_serializer=Attribute.SerializeToString,
-          response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-          )
-      self.AddLink = channel.unary_unary(
-          '/kama.KamaDatabase/AddLink',
-          request_serializer=Link.SerializeToString,
-          response_deserializer=Link.FromString,
-          )
-      self.DeleteLink = channel.unary_unary(
-          '/kama.KamaDatabase/DeleteLink',
-          request_serializer=Link.SerializeToString,
-          response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-          )
-      self.AddPermission = channel.unary_unary(
-          '/kama.KamaDatabase/AddPermission',
-          request_serializer=Permission.SerializeToString,
-          response_deserializer=Permission.FromString,
-          )
-      self.DeletePermission = channel.unary_unary(
-          '/kama.KamaDatabase/DeletePermission',
-          request_serializer=Permission.SerializeToString,
-          response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-          )
-
-
-  class KamaDatabaseServicer(object):
-    # missing associated documentation comment in .proto file
-    pass
-
-    def ListEntities(self, request, context):
-      """ListEntities returns all Entities matching any of the non-null fields
-      given in the request.
-      """
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def GetEntity(self, request, context):
-      """GetEntity will try to find an entity with the given uuid, name, and
-      kind, allowing wildcard searches for any of the fields that aren't set.
-      """
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def CreateEntity(self, request, context):
-      """CreateEntity will create a new Entity with the given name and kind and
-      return a new UUID
-      """
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def DeleteEntity(self, request, context):
-      """DeleteEntity will delete the Entity with the given UUID. Other fields
-      are ignored.
-      """
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def UpdateEntity(self, request, context):
-      """UpdateEntity currently only supports changing the entity's name. It uses
-      the uuid to determine what existing object is being updated. All other
-      fields are ignored.
-      """
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def AddAttribute(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def DeleteAttributes(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def AddLink(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def DeleteLink(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def AddPermission(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-    def DeletePermission(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-      context.set_details('Method not implemented!')
-      raise NotImplementedError('Method not implemented!')
-
-
-  def add_KamaDatabaseServicer_to_server(servicer, server):
-    rpc_method_handlers = {
-        'ListEntities': grpc.unary_stream_rpc_method_handler(
-            servicer.ListEntities,
-            request_deserializer=Entity.FromString,
-            response_serializer=Entity.SerializeToString,
-        ),
-        'GetEntity': grpc.unary_unary_rpc_method_handler(
-            servicer.GetEntity,
-            request_deserializer=Entity.FromString,
-            response_serializer=Entity.SerializeToString,
-        ),
-        'CreateEntity': grpc.unary_unary_rpc_method_handler(
-            servicer.CreateEntity,
-            request_deserializer=CreateEntityRequest.FromString,
-            response_serializer=Entity.SerializeToString,
-        ),
-        'DeleteEntity': grpc.unary_unary_rpc_method_handler(
-            servicer.DeleteEntity,
-            request_deserializer=Entity.FromString,
-            response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-        ),
-        'UpdateEntity': grpc.unary_unary_rpc_method_handler(
-            servicer.UpdateEntity,
-            request_deserializer=Entity.FromString,
-            response_serializer=Entity.SerializeToString,
-        ),
-        'AddAttribute': grpc.unary_unary_rpc_method_handler(
-            servicer.AddAttribute,
-            request_deserializer=Attribute.FromString,
-            response_serializer=Attribute.SerializeToString,
-        ),
-        'DeleteAttributes': grpc.unary_unary_rpc_method_handler(
-            servicer.DeleteAttributes,
-            request_deserializer=Attribute.FromString,
-            response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-        ),
-        'AddLink': grpc.unary_unary_rpc_method_handler(
-            servicer.AddLink,
-            request_deserializer=Link.FromString,
-            response_serializer=Link.SerializeToString,
-        ),
-        'DeleteLink': grpc.unary_unary_rpc_method_handler(
-            servicer.DeleteLink,
-            request_deserializer=Link.FromString,
-            response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-        ),
-        'AddPermission': grpc.unary_unary_rpc_method_handler(
-            servicer.AddPermission,
-            request_deserializer=Permission.FromString,
-            response_serializer=Permission.SerializeToString,
-        ),
-        'DeletePermission': grpc.unary_unary_rpc_method_handler(
-            servicer.DeletePermission,
-            request_deserializer=Permission.FromString,
-            response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-        ),
-    }
-    generic_handler = grpc.method_handlers_generic_handler(
-        'kama.KamaDatabase', rpc_method_handlers)
-    server.add_generic_rpc_handlers((generic_handler,))
-
-
-  class BetaKamaDatabaseServicer(object):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This class was generated
-    only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0."""
-    # missing associated documentation comment in .proto file
-    pass
-    def ListEntities(self, request, context):
-      """ListEntities returns all Entities matching any of the non-null fields
-      given in the request.
-      """
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def GetEntity(self, request, context):
-      """GetEntity will try to find an entity with the given uuid, name, and
-      kind, allowing wildcard searches for any of the fields that aren't set.
-      """
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def CreateEntity(self, request, context):
-      """CreateEntity will create a new Entity with the given name and kind and
-      return a new UUID
-      """
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def DeleteEntity(self, request, context):
-      """DeleteEntity will delete the Entity with the given UUID. Other fields
-      are ignored.
-      """
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def UpdateEntity(self, request, context):
-      """UpdateEntity currently only supports changing the entity's name. It uses
-      the uuid to determine what existing object is being updated. All other
-      fields are ignored.
-      """
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def AddAttribute(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def DeleteAttributes(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def AddLink(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def DeleteLink(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def AddPermission(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-    def DeletePermission(self, request, context):
-      # missing associated documentation comment in .proto file
-      pass
-      context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-
-
-  class BetaKamaDatabaseStub(object):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This class was generated
-    only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0."""
-    # missing associated documentation comment in .proto file
-    pass
-    def ListEntities(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      """ListEntities returns all Entities matching any of the non-null fields
-      given in the request.
-      """
-      raise NotImplementedError()
-    def GetEntity(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      """GetEntity will try to find an entity with the given uuid, name, and
-      kind, allowing wildcard searches for any of the fields that aren't set.
-      """
-      raise NotImplementedError()
-    GetEntity.future = None
-    def CreateEntity(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      """CreateEntity will create a new Entity with the given name and kind and
-      return a new UUID
-      """
-      raise NotImplementedError()
-    CreateEntity.future = None
-    def DeleteEntity(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      """DeleteEntity will delete the Entity with the given UUID. Other fields
-      are ignored.
-      """
-      raise NotImplementedError()
-    DeleteEntity.future = None
-    def UpdateEntity(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      """UpdateEntity currently only supports changing the entity's name. It uses
-      the uuid to determine what existing object is being updated. All other
-      fields are ignored.
-      """
-      raise NotImplementedError()
-    UpdateEntity.future = None
-    def AddAttribute(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    AddAttribute.future = None
-    def DeleteAttributes(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    DeleteAttributes.future = None
-    def AddLink(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    AddLink.future = None
-    def DeleteLink(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    DeleteLink.future = None
-    def AddPermission(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    AddPermission.future = None
-    def DeletePermission(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
-      # missing associated documentation comment in .proto file
-      pass
-      raise NotImplementedError()
-    DeletePermission.future = None
-
-
-  def beta_create_KamaDatabase_server(servicer, pool=None, pool_size=None, default_timeout=None, maximum_timeout=None):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This function was
-    generated only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0"""
-    request_deserializers = {
-      ('kama.KamaDatabase', 'AddAttribute'): Attribute.FromString,
-      ('kama.KamaDatabase', 'AddLink'): Link.FromString,
-      ('kama.KamaDatabase', 'AddPermission'): Permission.FromString,
-      ('kama.KamaDatabase', 'CreateEntity'): CreateEntityRequest.FromString,
-      ('kama.KamaDatabase', 'DeleteAttributes'): Attribute.FromString,
-      ('kama.KamaDatabase', 'DeleteEntity'): Entity.FromString,
-      ('kama.KamaDatabase', 'DeleteLink'): Link.FromString,
-      ('kama.KamaDatabase', 'DeletePermission'): Permission.FromString,
-      ('kama.KamaDatabase', 'GetEntity'): Entity.FromString,
-      ('kama.KamaDatabase', 'ListEntities'): Entity.FromString,
-      ('kama.KamaDatabase', 'UpdateEntity'): Entity.FromString,
-    }
-    response_serializers = {
-      ('kama.KamaDatabase', 'AddAttribute'): Attribute.SerializeToString,
-      ('kama.KamaDatabase', 'AddLink'): Link.SerializeToString,
-      ('kama.KamaDatabase', 'AddPermission'): Permission.SerializeToString,
-      ('kama.KamaDatabase', 'CreateEntity'): Entity.SerializeToString,
-      ('kama.KamaDatabase', 'DeleteAttributes'): google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-      ('kama.KamaDatabase', 'DeleteEntity'): google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-      ('kama.KamaDatabase', 'DeleteLink'): google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-      ('kama.KamaDatabase', 'DeletePermission'): google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-      ('kama.KamaDatabase', 'GetEntity'): Entity.SerializeToString,
-      ('kama.KamaDatabase', 'ListEntities'): Entity.SerializeToString,
-      ('kama.KamaDatabase', 'UpdateEntity'): Entity.SerializeToString,
-    }
-    method_implementations = {
-      ('kama.KamaDatabase', 'AddAttribute'): face_utilities.unary_unary_inline(servicer.AddAttribute),
-      ('kama.KamaDatabase', 'AddLink'): face_utilities.unary_unary_inline(servicer.AddLink),
-      ('kama.KamaDatabase', 'AddPermission'): face_utilities.unary_unary_inline(servicer.AddPermission),
-      ('kama.KamaDatabase', 'CreateEntity'): face_utilities.unary_unary_inline(servicer.CreateEntity),
-      ('kama.KamaDatabase', 'DeleteAttributes'): face_utilities.unary_unary_inline(servicer.DeleteAttributes),
-      ('kama.KamaDatabase', 'DeleteEntity'): face_utilities.unary_unary_inline(servicer.DeleteEntity),
-      ('kama.KamaDatabase', 'DeleteLink'): face_utilities.unary_unary_inline(servicer.DeleteLink),
-      ('kama.KamaDatabase', 'DeletePermission'): face_utilities.unary_unary_inline(servicer.DeletePermission),
-      ('kama.KamaDatabase', 'GetEntity'): face_utilities.unary_unary_inline(servicer.GetEntity),
-      ('kama.KamaDatabase', 'ListEntities'): face_utilities.unary_stream_inline(servicer.ListEntities),
-      ('kama.KamaDatabase', 'UpdateEntity'): face_utilities.unary_unary_inline(servicer.UpdateEntity),
-    }
-    server_options = beta_implementations.server_options(request_deserializers=request_deserializers, response_serializers=response_serializers, thread_pool=pool, thread_pool_size=pool_size, default_timeout=default_timeout, maximum_timeout=maximum_timeout)
-    return beta_implementations.server(method_implementations, options=server_options)
-
-
-  def beta_create_KamaDatabase_stub(channel, host=None, metadata_transformer=None, pool=None, pool_size=None):
-    """The Beta API is deprecated for 0.15.0 and later.
-
-    It is recommended to use the GA API (classes and functions in this
-    file not marked beta) for all further purposes. This function was
-    generated only to ease transition from grpcio<0.15.0 to grpcio>=0.15.0"""
-    request_serializers = {
-      ('kama.KamaDatabase', 'AddAttribute'): Attribute.SerializeToString,
-      ('kama.KamaDatabase', 'AddLink'): Link.SerializeToString,
-      ('kama.KamaDatabase', 'AddPermission'): Permission.SerializeToString,
-      ('kama.KamaDatabase', 'CreateEntity'): CreateEntityRequest.SerializeToString,
-      ('kama.KamaDatabase', 'DeleteAttributes'): Attribute.SerializeToString,
-      ('kama.KamaDatabase', 'DeleteEntity'): Entity.SerializeToString,
-      ('kama.KamaDatabase', 'DeleteLink'): Link.SerializeToString,
-      ('kama.KamaDatabase', 'DeletePermission'): Permission.SerializeToString,
-      ('kama.KamaDatabase', 'GetEntity'): Entity.SerializeToString,
-      ('kama.KamaDatabase', 'ListEntities'): Entity.SerializeToString,
-      ('kama.KamaDatabase', 'UpdateEntity'): Entity.SerializeToString,
-    }
-    response_deserializers = {
-      ('kama.KamaDatabase', 'AddAttribute'): Attribute.FromString,
-      ('kama.KamaDatabase', 'AddLink'): Link.FromString,
-      ('kama.KamaDatabase', 'AddPermission'): Permission.FromString,
-      ('kama.KamaDatabase', 'CreateEntity'): Entity.FromString,
-      ('kama.KamaDatabase', 'DeleteAttributes'): google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-      ('kama.KamaDatabase', 'DeleteEntity'): google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-      ('kama.KamaDatabase', 'DeleteLink'): google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-      ('kama.KamaDatabase', 'DeletePermission'): google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-      ('kama.KamaDatabase', 'GetEntity'): Entity.FromString,
-      ('kama.KamaDatabase', 'ListEntities'): Entity.FromString,
-      ('kama.KamaDatabase', 'UpdateEntity'): Entity.FromString,
-    }
-    cardinalities = {
-      'AddAttribute': cardinality.Cardinality.UNARY_UNARY,
-      'AddLink': cardinality.Cardinality.UNARY_UNARY,
-      'AddPermission': cardinality.Cardinality.UNARY_UNARY,
-      'CreateEntity': cardinality.Cardinality.UNARY_UNARY,
-      'DeleteAttributes': cardinality.Cardinality.UNARY_UNARY,
-      'DeleteEntity': cardinality.Cardinality.UNARY_UNARY,
-      'DeleteLink': cardinality.Cardinality.UNARY_UNARY,
-      'DeletePermission': cardinality.Cardinality.UNARY_UNARY,
-      'GetEntity': cardinality.Cardinality.UNARY_UNARY,
-      'ListEntities': cardinality.Cardinality.UNARY_STREAM,
-      'UpdateEntity': cardinality.Cardinality.UNARY_UNARY,
-    }
-    stub_options = beta_implementations.stub_options(host=host, metadata_transformer=metadata_transformer, request_serializers=request_serializers, response_deserializers=response_deserializers, thread_pool=pool, thread_pool_size=pool_size)
-    return beta_implementations.dynamic_stub(channel, 'kama.KamaDatabase', cardinalities, options=stub_options)
-except ImportError:
-  pass
 # @@protoc_insertion_point(module_scope)
