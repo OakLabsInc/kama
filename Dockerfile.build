@@ -1,8 +1,10 @@
 FROM alpine:3.6
 RUN apk add --no-cache bash python python-dev openssl-dev py-pip py-mysqldb alpine-sdk
-RUN pip install pip --upgrade && pip install wheel
+RUN pip install pip --upgrade \
+    && pip install wheel grpcio-tools==1.14.1
 
 WORKDIR /kama
 COPY . .
-#RUN python -m grpc_tools.protoc -Iprotos --python_out=kama --grpc_python_out=kama protos/kama.proto
-RUN pip wheel -w wheels .
+RUN python -m grpc_tools.protoc -Iprotos --python_out=kama --grpc_python_out=kama protos/kama.proto
+RUN python setup.py sdist
+RUN pip wheel -w dist .

@@ -1,10 +1,11 @@
 *.swp
 *.pyc
 *.egg-info
-wheels
-build
-dist
-env
+wheels/
+build/
+dist/
+env/
 *.cert
 *.key
 *.pem
+.vscode/
